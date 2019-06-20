@@ -30,11 +30,11 @@ parser.add_argument('--opt', dest='opt',
 
 parser.add_argument('--lr_max', dest='lr_max',
                     help='lr_max',
-                    default=0.001, type=int)
+                    default=0.0001, type=float)
 
 parser.add_argument('--lr_min', dest='lr_min',
                     help='lr_min',
-                    default=0.00001, type=int)
+                    default=0.00001, type=float)
 
 
 args = parser.parse_args()
