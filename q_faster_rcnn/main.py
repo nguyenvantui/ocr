@@ -4,6 +4,7 @@ from datasets import qdataset
 from tqdm import tqdm
 from model.vgg_backbone import vgg_backbone
 import time
+import torchsummary
 
 # hello world
 parser = argparse.ArgumentParser(description='faster-rcnn')
@@ -12,7 +13,7 @@ parser.add_argument('--batch', dest='batch_size',
                     default=3, type=int)
 parser.add_argument('--data_train', dest='data_train',
                     help='data_train',
-                    default="data/", type=str)
+                    default="../../", type=str)
 parser.add_argument('--shape', dest='shape',
                     help='shape',
                     default=600, type=int)
@@ -49,6 +50,8 @@ train_load = torch.utils.data.DataLoader(dataset=train_data,
 faster_rcnn = vgg_backbone(classes=10, pretrained=True)
 faster_rcnn.build()
 faster_rcnn = faster_rcnn.to(device)
+
+# torchsummary.summary(faster_rcnn)
 # ==========================================================================================
 
 def clip_gradient(model, clip_norm):
@@ -89,7 +92,7 @@ def train(epoch):
         data, info, gt, num = data.to(device), info.to(device), gt.to(device), num.to(device)
         faster_rcnn.zero_grad()
 
-        rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_box, rcnn_loss_cls, rcnn_loss_bbox, rois_label = faster_rcnn(data, info, gt, num)
+        _, _, _, rpn_loss_cls, rpn_loss_box, rcnn_loss_cls, rcnn_loss_bbox, rois_label = faster_rcnn(data, info, gt, num)
         loss = rpn_loss_cls + rpn_loss_box + rcnn_loss_cls + rcnn_loss_bbox
         train_loss += loss.item()
         optimizer.zero_grad()
@@ -102,11 +105,9 @@ def train(epoch):
             total_data = len(train_data)
             done_data = idx * args.batch_size
             now = time.time()
-            print("Data: {} / {} Loss:{:.7f}  Time:{:.2f} s".format(done_data,
-                                                                    total_data, loss_now, time_now))
+            print("Data: {} / {} Loss:{:.7f}  Time:{:.2f} s".format(done_data, total_data, loss_now, time_now))
 
         clip_gradient(faster_rcnn, 10.0)
-
 
 
 def test(epoch):
@@ -125,4 +126,4 @@ def main():
 
 if __name__ == "__main__":
     print(">>> run run <<<")
-    main()
+    # main()
